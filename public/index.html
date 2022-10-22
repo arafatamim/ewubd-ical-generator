@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EWU iCal Generator</title>
+  </head>
+
+  <body>
+    <h1>East West University Bangladesh iCal generator</h1>
+    <p>
+      For use in Outlook, Google Calendar, Apple Calendar, Thunderbird, or any
+      client that supports importing .ics files.
+    </p>
+    <p>
+      To obtain the calendar HTML file, navigate to the calendar URL, for
+      example:
+      <code
+        >https://ewubd.edu/academic-calendar-details/fall-2022-undergraduate-programs</code
+      >, right-click & choose "Save as".
+    </p>
+    <form>
+      <label for="calendar-path">Upload calendar file in HTML format: </label>
+      <input
+        type="file"
+        name="file"
+        id="calendar-file"
+        title="HTML calendar file"
+        accept="text/html"
+      />
+      <button type="submit">Process</button>
+      <br />
+    </form>
+    <p id="download-zone"></p>
+  </body>
+  <script type="module">
+    import init, { generate_ics } from "./pkg/ewu_ics_cal.js";
+
+    const readFile = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.addEventListener("load", (e) => {
+          resolve(e.target.result);
+        });
+        reader.addEventListener("error", (e) => {
+          reject(new Error("Error while reading file"));
+        });
+        reader.addEventListener("abort", (e) => {
+          reject(new Error("File reading aborted"));
+        });
+        reader.readAsText(file);
+      });
+    };
+
+    async function start(e) {
+      e.preventDefault();
+
+      const form = document.querySelector("form");
+      const file = form.file.files[0];
+      if (file == null) {
+        return alert("No files selected!");
+      }
+
+      const html = await readFile(file);
+
+      try {
+        const cal = await generate_ics(html);
+        const blob = new Blob([cal], { type: "text/plain" });
+        const file = new File([blob], "ewu_cal.ics", {
+          type: "text/calendar",
+        });
+        const downloadURL = URL.createObjectURL(file);
+
+        document.querySelector("#download-zone").innerHTML = `
+        <a href="${downloadURL}" download="${file.name}">Click here to download calendar</a>
+        `;
+      } catch (e) {
+        console.error(`WASM error: ` + e);
+        return alert(
+          "An error occurred! Check if uploaded HTML file is valid and try again!"
+        );
+      }
+    }
+
+    await init();
+    document.querySelector("form")?.addEventListener("submit", async (e) => {
+      await start(e);
+    });
+  </script>
+</html>
