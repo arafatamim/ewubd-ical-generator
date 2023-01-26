@@ -1,12 +1,13 @@
 mod wasm;
 
 use chrono::prelude::*;
-use scraper::{Html, Selector};
 use ics::{
     components::Parameter,
     properties::{DtEnd, DtStart, LastModified, Location, Summary},
     Event, ICalendar, Standard, TimeZone as ICSTimeZone,
 };
+use rocket::serde::Serialize;
+use scraper::{Html, Selector};
 use std::error::Error;
 
 pub struct Entry {
@@ -20,6 +21,24 @@ pub enum Semester {
     Spring(i32),
     Summer(i32),
     Fall(i32),
+}
+
+#[derive(Debug, Serialize)]
+pub struct Calendar {
+    pub name: String,
+    pub url: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Program {
+    pub program_type: String,
+    pub calendars: Vec<Calendar>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CalendarList {
+    pub year: String,
+    pub programs: Vec<Program>,
 }
 
 fn clean_raw_date(date: &str) -> String {
@@ -36,8 +55,64 @@ fn with_event_year(event_date: NaiveDate, publish_date: NaiveDate) -> NaiveDate 
     event_date.with_year(event_year).unwrap()
 }
 
-pub fn generate_entries_from_html(doc: &str) -> Result<Vec<Entry>, Box<dyn Error>> {
-    let doc = Html::parse_document(doc);
+pub fn collect_all_calendars(doc: &Html) -> Vec<CalendarList> {
+    let years = get_years(&doc);
+
+    years
+        .iter()
+        .map(|year| {
+            let programs = get_programs(&doc, year);
+            CalendarList {
+                year: year.to_owned(),
+                programs,
+            }
+        })
+        .collect()
+}
+
+pub fn get_years(doc: &Html) -> Vec<String> {
+    let year_selector = Selector::parse(".training-program-tab li").unwrap();
+
+    let years = doc
+        .select(&year_selector)
+        .map(|el| el.text().collect::<String>())
+        .collect::<Vec<String>>();
+
+    years
+}
+
+pub fn get_programs(doc: &Html, year: &str) -> Vec<Program> {
+    let tab_selector = Selector::parse(&format!(".tab-content > [id=\"{}\"]", year)).unwrap();
+    let panel_heading_selector = Selector::parse(".panel-heading").unwrap();
+    let panel_body_selector = Selector::parse(".panel-body").unwrap();
+    let calendar_semester_selector = Selector::parse("ul > li > a").unwrap();
+
+    let year_tab = doc.select(&tab_selector).next().unwrap();
+
+    let panels = year_tab
+        .select(&panel_heading_selector)
+        .map(|el| el.text().collect::<String>().trim().to_owned());
+
+    let calendars_panel = year_tab.select(&panel_body_selector).map(|el| {
+        el.select(&calendar_semester_selector).map(|el| Calendar {
+            name: el.text().collect::<String>().trim().to_owned(),
+            url: el.value().attr("href").unwrap().to_owned(),
+        })
+    });
+
+    let calendars = panels
+        .zip(calendars_panel)
+        .map(|(program, calendars)| Program {
+            program_type: program,
+            calendars: calendars.collect::<Vec<Calendar>>(),
+        })
+        .collect::<Vec<Program>>();
+
+    calendars
+}
+
+pub fn generate_entries_from_html(doc: &Html) -> Result<Vec<Entry>, Box<dyn Error>> {
+    // TODO: use nom for a more resilient parser
 
     let revise_date_selector =
         Selector::parse(".row > .col-md-9 > h4 > strong:nth-of-type(3)").unwrap();
@@ -157,7 +232,7 @@ pub fn generate_entries_from_html(doc: &str) -> Result<Vec<Entry>, Box<dyn Error
     Ok(entries)
 }
 
-pub fn generate_ics(doc: &str) -> Result<String, Box<dyn Error>> {
+pub fn generate_ics(doc: &Html) -> Result<String, Box<dyn Error>> {
     let mut calendar = ICalendar::new("2.0", "icalendar");
 
     let entries = generate_entries_from_html(doc)?;

@@ -22,3 +22,7 @@ scraper = "0.13.0"
 wasm-bindgen = "0.2.83"
 xxhash-rust = { version = "0.8.6", features = ["xxh3"] }
 wee_alloc = { version = "0.4.5", optional = true }
+rocket = "0.5.0-rc.2"
+tokio = "1.24.2"
+rocket_dyn_templates = { version = "0.1.0-rc.2", features = ["tera"] }
+serde = { version = "1.0.152", features = ["derive"] }
