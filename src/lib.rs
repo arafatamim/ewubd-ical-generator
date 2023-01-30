@@ -10,6 +10,14 @@ use rocket::serde::Serialize;
 use scraper::{Html, Selector};
 use std::error::Error;
 
+pub struct CalendarDetails {
+    pub calendar_name: String,
+    pub semester: String,
+    pub revised_date: NaiveDate,
+    pub entries: Vec<Entry>,
+}
+
+#[derive(Serialize)]
 pub struct Entry {
     pub date: (NaiveDate, NaiveDate),
     pub revised_date: NaiveDate,
@@ -111,9 +119,10 @@ pub fn get_programs(doc: &Html, year: &str) -> Vec<Program> {
     calendars
 }
 
-pub fn generate_entries_from_html(doc: &Html) -> Result<Vec<Entry>, Box<dyn Error>> {
+pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> {
     // TODO: use nom for a more resilient parser
 
+    let calendar_name_selector = Selector::parse(".row > .col-md-9 h3:nth-of-type(1)").unwrap();
     let revise_date_selector =
         Selector::parse(".row > .col-md-9 > h4 > strong:nth-of-type(3)").unwrap();
     let semester_selector = Selector::parse(".row h3:nth-of-type(2)").unwrap();
@@ -170,7 +179,7 @@ pub fn generate_entries_from_html(doc: &Html) -> Result<Vec<Entry>, Box<dyn Erro
     for row in table.select(&row_selector) {
         let date = row
             .select(&date_selector)
-            .map(|a| a.text().collect::<String>().trim().to_owned())
+            .map(|el| el.text().collect::<String>().trim().to_owned())
             .collect::<String>();
         if date.is_empty() {
             continue;
@@ -229,13 +238,21 @@ pub fn generate_entries_from_html(doc: &Html) -> Result<Vec<Entry>, Box<dyn Erro
         });
     }
 
-    Ok(entries)
+    let calendar_name = doc
+        .select(&calendar_name_selector)
+        .map(|el| el.text().collect::<String>().trim().to_owned())
+        .collect::<String>();
+
+    Ok(CalendarDetails {
+        calendar_name,
+        revised_date,
+        semester,
+        entries,
+    })
 }
 
-pub fn generate_ics(doc: &Html) -> Result<String, Box<dyn Error>> {
+pub fn generate_ics(entries: Vec<Entry>) -> String {
     let mut calendar = ICalendar::new("2.0", "icalendar");
-
-    let entries = generate_entries_from_html(doc)?;
 
     let timezone = ICSTimeZone::standard(
         "Asia/Dhaka",
@@ -264,7 +281,7 @@ pub fn generate_ics(doc: &Html) -> Result<String, Box<dyn Error>> {
         calendar.add_event(event);
     }
 
-    Ok(calendar.to_string())
+    calendar.to_string()
 }
 
 // TODO: implement SEQUENCE property

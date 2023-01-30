@@ -11,7 +11,7 @@
       <ul>
         {% for calendar in program.calendars %}
           <li>
-            <a href="/generate?calendar_path={{calendar.url}}">{{calendar.name}}</a>
+            <a href="/info?calendar_path={{calendar.url}}">{{calendar.name}}</a>
           </li>
         {% endfor %}
       </ul>
