@@ -1,1 +1,1 @@
-Hosted version (compiled & deployed with WASM): https://ewubd-ical-generator.surge.sh/
+Hosted version: https://ewubd-ical-generator.vercel.app/
