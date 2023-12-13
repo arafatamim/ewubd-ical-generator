@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>EWU iCal Generator</title>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+  </head>
+
+  <body>
+    <h1>EWU iCal Generator</h1>
+    <div id="root">Loading...</div>
+
+    <script type="module">
+      import { html, render } from "//unpkg.com/lighterhtml?module";
+
+      const root = document.getElementById("root");
+
+      const calendarRemotePath = new URL(document.location).searchParams.get(
+        "calendar_path",
+      );
+
+      const fetchCalendar = async () => {
+        return fetch("/api/entries?calendar_path=" + calendarRemotePath).then(
+          (res) => res.json(),
+        );
+      };
+
+      const calendar = await fetchCalendar().catch((e) => {
+        render(
+          root,
+          html`<p>Couldn't generate calendar :-( <br />(${e.message})</p>`,
+        );
+      });
+      const revisedDate = new Date(calendar["revised_date"]);
+      const semester = calendar["semester"];
+
+      document.title = semester + " calendar - EWU iCal generator";
+      const doc = html`<h2>${semester}</h2>
+        <p>Last updated: ${revisedDate.toDateString()}</p>
+        <p>
+          <a href="/api/generate?calendar_path=${calendarRemotePath}"
+            >Download</a
+          >
+          calendar file (.ics)
+        </p>
+        <table>
+          <tr>
+            <th>Date</th>
+            <th>Event</th>
+          </tr>
+          ${calendar.entries.map(
+            (entry) => html`
+              <tr>
+                <td>
+                  ${new Date(entry.date[0]).toDateString()} -
+                  ${new Date(entry.date[1]).toDateString()}
+                </td>
+                <td>${entry.event}</td>
+              </tr>
+            `,
+          )}
+        </table> `;
+
+      render(root, doc);
+    </script>
+  </body>
+</html>

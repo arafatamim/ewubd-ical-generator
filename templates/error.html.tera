@@ -1,9 +1,0 @@
-{% extends "base" %}
-{% block title %}
-Error - EWU iCS Calendar
-{% endblock title %}
-
-{% block content %}
-<h1>Encountered an error</h1>
-<p>{{error}}</p>
-{% endblock content %}

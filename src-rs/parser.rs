@@ -1,15 +1,15 @@
-mod wasm;
-
 use chrono::prelude::*;
 use ics::{
     components::Parameter,
     properties::{DtEnd, DtStart, LastModified, Location, Summary},
     Event, ICalendar, Standard, TimeZone as ICSTimeZone,
 };
-use rocket::serde::Serialize;
+use regex::Regex;
 use scraper::{Html, Selector};
+use serde::Serialize;
 use std::error::Error;
 
+#[derive(Serialize, Debug)]
 pub struct CalendarDetails {
     pub calendar_name: String,
     pub semester: String,
@@ -17,14 +17,14 @@ pub struct CalendarDetails {
     pub entries: Vec<Entry>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Entry {
     pub date: (NaiveDate, NaiveDate),
     pub revised_date: NaiveDate,
     pub event: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Semester {
     Spring(i32),
     Summer(i32),
@@ -53,6 +53,10 @@ fn clean_raw_date(date: &str) -> String {
     date.replace('.', "").replace("Sept ", "Sep ")
 }
 
+/// Computes the year event occurs.
+/// If event month is behind publish month,
+/// then assumes that event year is later than publish year,
+/// or else assumes that event year is the same as publish year
 fn with_event_year(event_date: NaiveDate, publish_date: NaiveDate) -> NaiveDate {
     let month_diff = event_date.month() as i32 - publish_date.month() as i32;
     let event_year = if month_diff.is_negative() {
@@ -112,7 +116,9 @@ pub fn get_programs(doc: &Html, year: &str) -> Vec<Program> {
         .zip(calendars_panel)
         .map(|(program, calendars)| Program {
             program_type: program,
-            calendars: calendars.collect::<Vec<Calendar>>(),
+            calendars: calendars
+                .filter(|cal| !cal.name.to_lowercase().contains("exam"))
+                .collect::<Vec<Calendar>>(),
         })
         .collect::<Vec<Program>>();
 
@@ -122,37 +128,36 @@ pub fn get_programs(doc: &Html, year: &str) -> Vec<Program> {
 pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> {
     // TODO: use nom for a more resilient parser
 
+    let general_selector = Selector::parse(".row > .col-md-9").unwrap();
     let calendar_name_selector = Selector::parse(".row > .col-md-9 h3:nth-of-type(1)").unwrap();
-    let revise_date_selector =
-        Selector::parse(".row > .col-md-9 > h4 > strong:nth-of-type(3)").unwrap();
-    let semester_selector = Selector::parse(".row h3:nth-of-type(2)").unwrap();
     let table_selector = Selector::parse("table").unwrap();
     let row_selector = Selector::parse("tr").unwrap();
     let date_selector = Selector::parse("td:nth-of-type(1)").unwrap();
     let event_selector = Selector::parse("td:nth-of-type(3)").unwrap();
 
-    let revise_date_raw = doc
-        .select(&revise_date_selector)
+    let revise_date_regex = Regex::new(r"\{((\d?\d)\s(\w+)\s(\d{4}))\}").unwrap();
+    let semester_regex = Regex::new(r"(?i)(spring|summer|fall)\s(\d{4})").unwrap();
+
+    let raw_doc = doc
+        .select(&general_selector)
         .next()
-        .ok_or("Calendar revised date not found")?
+        .expect("Couldn't extract raw document")
         .text()
         .collect::<String>()
         .trim()
         .to_string();
-    let semester = doc
-        .select(&semester_selector)
-        .next()
-        .ok_or("Could not decode semester")?
-        .text()
-        .collect::<String>()
-        .trim()
+    let revise_date_raw = revise_date_regex
+        .captures(&raw_doc)
+        .expect("Calendar revise date not found")[1]
         .to_string();
-    let year = semester
-        .split_whitespace()
-        .nth(1)
-        .expect("Year not found")
+
+    let semester_capture = semester_regex
+        .captures(&raw_doc)
+        .expect("Semester not found");
+    let semester = semester_capture[1].to_string();
+    let year = semester_capture[2]
         .parse::<i32>()
-        .expect("year not valid");
+        .expect("Couldn't decode year");
     let sem = match semester
         .split_whitespace()
         .next()
@@ -168,11 +173,11 @@ pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> 
         .next()
         .ok_or("dates not found")?;
 
-    let revised_date = NaiveDate::parse_from_str(&revise_date_raw, "{%d %B %Y}")?;
+    let revised_date = NaiveDate::parse_from_str(&revise_date_raw, "%d %B %Y")?;
     let publish_date = match sem {
-        Semester::Spring(year) => NaiveDate::from_ymd(year, 1, 1),
-        Semester::Summer(year) => NaiveDate::from_ymd(year, 5, 1),
-        Semester::Fall(year) => NaiveDate::from_ymd(year, 9, 1),
+        Semester::Spring(year) => NaiveDate::from_ymd_opt(year, 1, 1).unwrap(),
+        Semester::Summer(year) => NaiveDate::from_ymd_opt(year, 5, 1).unwrap(),
+        Semester::Fall(year) => NaiveDate::from_ymd_opt(year, 9, 1).unwrap(),
     };
 
     let mut entries: Vec<Entry> = vec![];
@@ -181,7 +186,12 @@ pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> 
             .select(&date_selector)
             .map(|el| el.text().collect::<String>().trim().to_owned())
             .collect::<String>();
+
         if date.is_empty() {
+            continue;
+        }
+
+        if date.starts_with("Date") {
             continue;
         }
 
@@ -193,8 +203,8 @@ pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> 
         let raw_end_date = days.next().map(clean_raw_date);
         let date = match (raw_start_date, raw_end_date) {
             (Some(x), Some(y)) => {
-                let start_day_raw = format!("{} 1970", x);
-                let end_day_raw = format!("{} 1970", y);
+                let start_day_raw = format!("{} 1972", x);
+                let end_day_raw = format!("{} 1972", y);
 
                 let start_date = NaiveDate::parse_from_str(&start_day_raw, format_1)
                     .or_else(|_| NaiveDate::parse_from_str(&start_day_raw, format_2))
@@ -204,7 +214,9 @@ pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> 
                     .or_else(|_| NaiveDate::parse_from_str(&end_day_raw, format_2))
                     .or_else(|_| -> Result<NaiveDate, Box<dyn Error>> {
                         let single_day = y.parse::<i32>()?;
-                        let date = NaiveDate::from_ymd(1970, start_date.month(), single_day as u32);
+                        let date =
+                            NaiveDate::from_ymd_opt(1972, start_date.month(), single_day as u32)
+                                .unwrap();
                         Ok(date)
                     })
                     .map(|x| with_event_year(x, publish_date))?;
@@ -212,7 +224,7 @@ pub fn generate_calendar(doc: &Html) -> Result<CalendarDetails, Box<dyn Error>> 
                 (start_date, end_date)
             }
             (Some(x), None) => {
-                let raw_date = format!("{} 1970", x);
+                let raw_date = format!("{} 1972", x);
                 let date = NaiveDate::parse_from_str(&raw_date, format_1)
                     .or_else(|_| NaiveDate::parse_from_str(&raw_date, format_2))
                     .map(|x| with_event_year(x, publish_date))?;
