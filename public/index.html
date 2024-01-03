@@ -11,8 +11,6 @@
     <div id="root">Loading...</div>
 
     <script type="module">
-      import { html, render } from "//unpkg.com/lighterhtml?module";
-
       const root = document.getElementById("root");
 
       const fetchCalendars = async () => {
@@ -20,36 +18,33 @@
       };
 
       const calendars = await fetchCalendars().catch((e) => {
-        render(
-          root,
-          html`<p>Couldn't get calendars :-( <br />(${e.message})</p>`,
-        );
+        root.innerHTML = `<p>Couldn't get calendars :-( <br />(${e.message})</p>`;
       });
 
-      const doc = html`<div>
+      const doc = `<div>
         ${calendars.map(
           (cal) =>
-            html`<h2>${cal.year}</h2>
+            `<h2>${cal.year}</h2>
               ${cal.programs.map(
                 (program) =>
-                  html`<details>
+                  `<details>
                     <summary>${program.program_type}</summary>
                     <ul>
                       ${program.calendars.map(
                         (calendar) =>
-                          html`<li>
-                            <a href="/info.html?calendar_path=${calendar.url}"
-                              >${calendar.name}</a
-                            >
-                          </li>`,
+                          `<li>
+                            <a href="/info.html?calendar_path=${calendar.url}">
+                              ${calendar.name}
+                            </a>
+                          </li>`
                       )}
                     </ul>
-                  </details>`,
-              )}`,
+                  </details>`
+              )}`
         )}
       </div>`;
 
-      render(root, doc);
+      root.innerHTML = doc;
     </script>
   </body>
 </html>

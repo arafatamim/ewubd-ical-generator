@@ -10,8 +10,6 @@
     <div id="root">Loading...</div>
 
     <script type="module">
-      import { html, render } from "//unpkg.com/lighterhtml?module";
-
       const root = document.getElementById("root");
 
       const calendarRemotePath = new URL(document.location).searchParams.get(
@@ -25,21 +23,16 @@
       };
 
       const calendar = await fetchCalendar().catch((e) => {
-        render(
-          root,
-          html`<p>Couldn't generate calendar :-( <br />(${e.message})</p>`,
-        );
+        root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
       });
       const revisedDate = new Date(calendar["revised_date"]);
       const semester = calendar["semester"];
 
       document.title = semester + " calendar - EWU iCal generator";
-      const doc = html`<h2>${semester}</h2>
+      const doc = `<h2>${semester}</h2>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
-          <a href="/api/generate?calendar_path=${calendarRemotePath}"
-            >Download</a
-          >
+          <a href="/api/generate?calendar_path=${calendarRemotePath}">Download</a>
           calendar file (.ics)
         </p>
         <table>
@@ -48,7 +41,7 @@
             <th>Event</th>
           </tr>
           ${calendar.entries.map(
-            (entry) => html`
+            (entry) => `
               <tr>
                 <td>
                   ${new Date(entry.date[0]).toDateString()} -
@@ -58,9 +51,9 @@
               </tr>
             `,
           )}
-        </table> `;
+        </table>`;
 
-      render(root, doc);
+      root.innerHTML = doc;
     </script>
   </body>
 </html>
