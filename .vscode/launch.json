@@ -1,0 +1,175 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'ewu_ics_cal'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "ewu_ics_cal",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'calendars'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=calendars",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "calendars",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'calendars'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=calendars",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "calendars",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'entries'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=entries",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "entries",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'entries'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=entries",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "entries",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'generate'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=generate",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "generate",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'generate'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=generate",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "generate",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'test'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=test",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=test",
+                    "--package=ewu_ics_cal"
+                ],
+                "filter": {
+                    "name": "test",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

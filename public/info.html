@@ -16,20 +16,28 @@
         "calendar_path",
       );
 
-      const fetchCalendar = async () => {
-        return fetch("/api/entries?calendar_path=" + calendarRemotePath).then(
-          (res) => res.json(),
-        );
-      };
+      const fetchCalendar = () =>
+        fetch("/api/entries?calendar_path=" + calendarRemotePath);
 
-      const calendar = await fetchCalendar().catch((e) => {
-        root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
-      });
-      const revisedDate = new Date(calendar["revised_date"]);
-      const semester = calendar["semester"];
+      const calendar = await fetchCalendar()
+        .then((res) => {
+          if (!res.ok) {
+            root.innerHTML = `<p>Couldn't generate calendar :-( <br />Check if <a href="//ewubd.edu">ewubd.edu</a> loads correctly</p>`;
+          } else return res.json();
+        })
+        .catch((e) => {
+          root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
+        });
 
-      document.title = semester + " calendar - EWU iCal generator";
-      const doc = `<h2>${semester}</h2>
+      if (calendar != null) {
+        const calendarName = calendar["calendar_name"];
+        const revisedDate = new Date(calendar["revised_date"]);
+        const semester = calendar["semester"];
+        const year = calendar["year"];
+
+        document.title = `${semester} ${year} calendar - EWU iCal generator`;
+        const doc = `<h2>${semester} ${year}</h2>
+        <h3>${calendarName}</h3>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
           <a href="/api/generate?calendar_path=${calendarRemotePath}">Download</a>
@@ -40,20 +48,29 @@
             <th>Date</th>
             <th>Event</th>
           </tr>
-          ${calendar.entries.map(
-            (entry) => `
+          ${calendar.entries.map((entry) => {
+            const fromDate = new Date(entry.date[0]);
+            const toDate =
+              entry.date[1] != null ? new Date(entry.date[1]) : null;
+
+            const dateStr =
+              toDate == null
+                ? fromDate.toDateString()
+                : fromDate.toDateString() == toDate.toDateString()
+                  ? fromDate.toDateString()
+                  : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
+
+            return `
               <tr>
-                <td>
-                  ${new Date(entry.date[0]).toDateString()} -
-                  ${new Date(entry.date[1]).toDateString()}
-                </td>
+                <td>${dateStr}</td>
                 <td>${entry.event}</td>
               </tr>
-            `,
-          )}
+            `;
+          })}
         </table>`;
 
-      root.innerHTML = doc;
+        root.innerHTML = doc;
+      }
     </script>
   </body>
 </html>

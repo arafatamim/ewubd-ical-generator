@@ -10,8 +10,12 @@ pub async fn generate(req: Request) -> Result<Response<Body>, VercelError> {
     let calendar_remote_path = utils::get_calendar_path(&req)?;
     let calendar = utils::fetch_calendar_details(&calendar_remote_path).await?;
 
-    let ics = parser::generate_ics(calendar.entries);
-    let filename = format!("{} - {}.ics", calendar.semester, calendar.revised_date);
+    let semester = calendar.semester.clone();
+    let year = calendar.year;
+    let revised_date = calendar.revised_date;
+
+    let ics = parser::generate_ics(calendar);
+    let filename = format!("{semester} {year} - {revised_date}.ics");
 
     let mut resp = Response::builder()
         .status(StatusCode::OK)
@@ -20,7 +24,7 @@ pub async fn generate(req: Request) -> Result<Response<Body>, VercelError> {
             "Content-Disposition",
             format!("attachment; filename=\"{}\"", filename),
         )
-        .body(ics.to_string().into())?;
+        .body(ics.into())?;
 
     cache(&mut resp);
 
