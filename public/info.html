@@ -48,25 +48,27 @@
             <th>Date</th>
             <th>Event</th>
           </tr>
-          ${calendar.entries.map((entry) => {
-            const fromDate = new Date(entry.date[0]);
-            const toDate =
-              entry.date[1] != null ? new Date(entry.date[1]) : null;
+          ${calendar.entries
+            .map((entry) => {
+              const fromDate = new Date(entry.date[0]);
+              const toDate =
+                entry.date[1] != null ? new Date(entry.date[1]) : null;
 
-            const dateStr =
-              toDate == null
-                ? fromDate.toDateString()
-                : fromDate.toDateString() == toDate.toDateString()
+              const dateStr =
+                toDate == null
                   ? fromDate.toDateString()
-                  : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
+                  : fromDate.toDateString() == toDate.toDateString()
+                    ? fromDate.toDateString()
+                    : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
 
-            return `
+              return `
               <tr>
                 <td>${dateStr}</td>
                 <td>${entry.event}</td>
               </tr>
             `;
-          })}
+            })
+            .join("")}
         </table>`;
 
         root.innerHTML = doc;

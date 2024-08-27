@@ -22,12 +22,14 @@
       });
 
       const doc = `<div>
-        ${calendars.map(
-          (cal) =>
-            `<h2>${cal.year}</h2>
-              ${cal.programs.map(
-                (program) =>
-                  `<details>
+        ${calendars
+          .map(
+            (cal) =>
+              `<h2>${cal.year}</h2>
+              ${cal.programs
+                .map(
+                  (program) =>
+                    `<details>
                     <summary>${program.program_type}</summary>
                     <ul>
                       ${program.calendars.map(
@@ -36,12 +38,14 @@
                             <a href="/info.html?calendar_path=${calendar.url}">
                               ${calendar.name}
                             </a>
-                          </li>`
-                      )}
+                          </li>`,
+                      ).join("")}
                     </ul>
-                  </details>`
-              )}`
-        )}
+                  </details>`,
+                )
+                .join("")}`, // join to prevent stray commas in output
+          )
+          .join("")}
       </div>`;
 
       root.innerHTML = doc;
