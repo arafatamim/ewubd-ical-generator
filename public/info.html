@@ -1,47 +1,67 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>EWU iCal Generator</title>
-    <link rel="stylesheet" type="text/css" href="stylesheet.css" />
-  </head>
 
-  <body>
-    <h1>EWU iCal Generator</h1>
-    <div id="root">Loading...</div>
+<head>
+  <title>EWU Calendar Importer</title>
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
-    <script type="module">
-      const root = document.getElementById("root");
+<body>
+  <h1><a href="/">EWU Calendar Importer</a></h1>
+  <div id="root">Loading...</div>
 
-      const calendarRemotePath = new URL(document.location).searchParams.get(
-        "calendar_path",
-      );
+  <br /><hr />
+  <p>Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
+     <a href="//github.com/arafatamim/ewubd-ical-generator">Source code on GitHub</a> •
+     <a href="//github.com/arafatamim/ewubd-ical-generator/issues">Report an issue</a>
+  </p>
+  <p>Disclaimer: This is a hobby project and not affiliated with <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
+  Use at your own risk.</p>
 
-      const fetchCalendar = () =>
-        fetch("/api/entries?calendar_path=" + calendarRemotePath);
+  <script src="https://cdn.jsdelivr.net/npm/add-to-calendar-button@2" async defer></script>
+  <script type="module">
+    const root = document.getElementById("root");
 
-      const calendar = await fetchCalendar()
-        .then((res) => {
-          if (!res.ok) {
-            root.innerHTML = `<p>Couldn't generate calendar :-( <br />Check if <a href="//ewubd.edu">ewubd.edu</a> loads correctly</p>`;
-          } else return res.json();
-        })
-        .catch((e) => {
-          root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
-        });
+    const calendarRemotePath = new URL(document.location).searchParams.get(
+      "calendar_path",
+    );
 
-      if (calendar != null) {
-        const calendarName = calendar["calendar_name"];
-        const revisedDate = new Date(calendar["revised_date"]);
-        const semester = calendar["semester"];
-        const year = calendar["year"];
+    const fetchCalendar = () =>
+      fetch("/api/entries?calendar_path=" + calendarRemotePath);
 
-        document.title = `${semester} ${year} calendar - EWU iCal generator`;
-        const doc = `<h2>${semester} ${year}</h2>
+    const calendar = await fetchCalendar()
+      .then((res) => {
+        if (!res.ok) {
+          root.innerHTML = `<p>Couldn't generate calendar :-( <br />Check if <a href="//ewubd.edu">ewubd.edu</a> loads correctly</p>`;
+        } else return res.json();
+      })
+      .catch((e) => {
+        root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
+      });
+
+    if (calendar != null) {
+      const calendarName = calendar["calendar_name"];
+      const revisedDate = new Date(calendar["revised_date"]);
+      const semester = calendar["semester"];
+      const year = calendar["year"];
+
+      document.title = `${semester} ${year} calendar - EWU Calendar Importer`;
+      const doc = `<h2>${semester} ${year}</h2>
         <h3>${calendarName}</h3>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
-          <a href="/api/generate?calendar_path=${calendarRemotePath}">Download</a>
-          calendar file (.ics)
+          <add-to-calendar-button
+            name="${semester} ${year} ${calendarName}"
+            subscribe
+            icsFile="${window.location.origin}/api/generate?calendar_path=${calendarRemotePath}"
+            options="'Google','Apple','Outlook.com','iCal','Microsoft 365','Microsoft Teams','Yahoo'"
+            buttonStyle="flat"
+            listStyle="dropdown"
+            lightMode="dark"
+            styleDark="--font: inherit;"
+            hideCheckmark
+          ></add-to-calendar-button>
         </p>
         <table>
           <tr>
@@ -49,30 +69,30 @@
             <th>Event</th>
           </tr>
           ${calendar.entries
-            .map((entry) => {
-              const fromDate = new Date(entry.date[0]);
-              const toDate =
-                entry.date[1] != null ? new Date(entry.date[1]) : null;
+          .map((entry) => {
+            const fromDate = new Date(entry.date[0]);
+            const toDate =
+              entry.date[1] != null ? new Date(entry.date[1]) : null;
 
-              const dateStr =
-                toDate == null
+            const dateStr =
+              toDate == null
+                ? fromDate.toDateString()
+                : fromDate.toDateString() == toDate.toDateString()
                   ? fromDate.toDateString()
-                  : fromDate.toDateString() == toDate.toDateString()
-                    ? fromDate.toDateString()
-                    : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
+                  : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
 
-              return `
+            return `
               <tr>
                 <td>${dateStr}</td>
                 <td>${entry.event}</td>
               </tr>
             `;
-            })
-            .join("")}
+          })
+          .join("")}
         </table>`;
 
-        root.innerHTML = doc;
-      }
-    </script>
-  </body>
+      root.innerHTML = doc;
+    }
+  </script>
+</body>
 </html>
