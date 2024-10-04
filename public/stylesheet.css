@@ -232,3 +232,7 @@ button, .button {
   background-color: #222;
   color: #01ff70;
 }
+
+li:not(:last-child) {
+  margin-bottom: .5rem;
+}

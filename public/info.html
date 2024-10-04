@@ -51,10 +51,12 @@
         <h3>${calendarName}</h3>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
-          <a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("https://")}">Add to Google Calendar</a>
-          <a class="button" target="_blank" href="${fileUri("webcal://")}">Add to Apple Calendar</a>
-          <a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri("https://")}">Add to Outlook.com</a>
-          <br/><br/>or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a>
+          <ul>
+            <li><a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("https://")}">Add to Google Calendar</a></li>
+            <li><a class="button" target="_blank" href="${fileUri("webcal://")}">Add to Apple Calendar</a></li>
+            <li><a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri("https://")}">Add to Outlook.com</a></li>
+            <li>or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a></li>
+          </ul>
         </p>
         <table>
           <tr>
