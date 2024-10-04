@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use ics::{
-    components::Parameter,
-    properties::{DtEnd, DtStart, LastModified, Location, Name, Summary},
+    components::{Parameter, Property},
+    properties::{CalScale, DtEnd, DtStart, LastModified, Location, Method, Name, Summary},
     Event, ICalendar, Standard, TimeZone as ICSTimeZone,
 };
 use regex::Regex;
@@ -272,10 +272,14 @@ pub fn generate_ics(calendar_details: CalendarDetails) -> String {
         Standard::new("19700101T000000", "+0600", "+0600"),
     );
     calendar.add_timezone(timezone);
-    calendar.push(Name::new(format!(
+    let cal_name = format!(
         "{} {} {}",
         calendar_details.semester, calendar_details.year, calendar_details.calendar_name
-    )));
+    );
+    calendar.push(Name::new(&cal_name));
+    calendar.push(Property::new("X-WR-CALNAME", &cal_name));
+    calendar.push(CalScale::new("GREGORIAN"));
+    calendar.push(Method::new("PUBLISH"));
 
     let entries = calendar_details.entries;
 
