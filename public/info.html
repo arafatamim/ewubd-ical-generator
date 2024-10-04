@@ -54,7 +54,7 @@
           <add-to-calendar-button
             name="${semester} ${year} ${calendarName}"
             subscribe
-            icsFile="${window.location.origin}/api/generate?calendar_path=${calendarRemotePath}"
+            icsFile="https://${window.location.host}/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}"
             options="'Google','Apple','Outlook.com','iCal','Microsoft 365','Microsoft Teams','Yahoo'"
             buttonStyle="flat"
             listStyle="dropdown"

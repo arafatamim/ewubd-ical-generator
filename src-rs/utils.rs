@@ -2,6 +2,7 @@ use super::parser;
 use scraper::Html;
 use std::error::Error;
 use vercel_runtime::{Body, Error as VercelError, Request, Response};
+use urlencoding::decode;
 
 pub async fn fetch_calendar_page() -> Result<Html, Box<dyn Error>> {
     let resp = reqwest::get("https://www.ewubd.edu/academic-calendar")
@@ -35,7 +36,7 @@ pub fn get_calendar_path(req: &Request) -> Result<String, Box<dyn Error + Send +
                 .map(|v| v.to_owned())
         })?;
 
-    let calendar_path = calendar_path.as_str().unwrap().into();
+    let calendar_path = decode(calendar_path.as_str().unwrap())?.into_owned();
 
     Ok(calendar_path)
 }
