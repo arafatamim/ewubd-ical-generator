@@ -19,7 +19,6 @@
   <p>Disclaimer: This is a hobby project and not affiliated with <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
   Use at your own risk.</p>
 
-  <script src="https://cdn.jsdelivr.net/npm/add-to-calendar-button@2.6.21" async defer></script>
   <script type="module">
     const root = document.getElementById("root");
 
@@ -45,24 +44,17 @@
       const revisedDate = new Date(calendar["revised_date"]);
       const semester = calendar["semester"];
       const year = calendar["year"];
+      const fileUri = (protocol) => protocol + window.location.host + "/api/generate?calendar_path=" + calendarRemotePath;
 
       document.title = `${semester} ${year} calendar - EWU Calendar Importer`;
       const doc = `<h2>${semester} ${year}</h2>
         <h3>${calendarName}</h3>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
-          <add-to-calendar-button
-            name="${semester} ${year} ${calendarName}"
-            subscribe
-            icsFile="https://${window.location.host}/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}"
-            options="'Google','Apple','Outlook.com','iCal','Microsoft 365','Microsoft Teams','Yahoo'"
-            buttonStyle="flat"
-            listStyle="dropdown"
-            lightMode="dark"
-            styleDark="--font: inherit; --btn-background: #01ff70; --btn-text: black; --btn-border: none;"
-            hideCheckmark
-            inline
-          ></add-to-calendar-button> or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a>
+          <a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("https://")}">Add to Google Calendar</a>
+          <a class="button" target="_blank" href="${fileUri("webcal://")}">Add to Apple Calendar</a>
+          <a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri("https://")}">Add to Outlook.com</a>
+          <br/><br/>or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a>
         </p>
         <table>
           <tr>
