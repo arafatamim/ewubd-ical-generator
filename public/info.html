@@ -19,7 +19,7 @@
   <p>Disclaimer: This is a hobby project and not affiliated with <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
   Use at your own risk.</p>
 
-  <script src="https://cdn.jsdelivr.net/npm/add-to-calendar-button@2" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/add-to-calendar-button@2.6.21" async defer></script>
   <script type="module">
     const root = document.getElementById("root");
 
@@ -59,9 +59,10 @@
             buttonStyle="flat"
             listStyle="dropdown"
             lightMode="dark"
-            styleDark="--font: inherit;"
+            styleDark="--font: inherit; --btn-background: #01ff70; --btn-text: black; --btn-border: none;"
             hideCheckmark
-          ></add-to-calendar-button>
+            inline
+          ></add-to-calendar-button> or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a>
         </p>
         <table>
           <tr>
