@@ -1,93 +1,154 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <title>EWU Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+  </head>
 
-<head>
-  <title>EWU Calendar Importer</title>
-  <link rel="stylesheet" type="text/css" href="stylesheet.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+  <body>
+    <h1><a href="/">EWU Calendar</a></h1>
+    <div id="root">Loading...</div>
+    <div id="calendar"></div>
 
-<body>
-  <h1><a href="/">EWU Calendar Importer</a></h1>
-  <div id="root">Loading...</div>
+    <br />
+    <hr />
+    <p>
+      Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
+      <a href="//github.com/arafatamim/ewubd-ical-generator"
+        >Source code on GitHub</a
+      >
+      •
+      <a href="//github.com/arafatamim/ewubd-ical-generator/issues"
+        >Report an issue</a
+      >
+    </p>
+    <p>
+      Disclaimer: This is a hobby project and not affiliated with
+      <a href="//ewubd.edu">East West University, Bangladesh</a> in any way. Use
+      at your own risk.
+    </p>
 
-  <br /><hr />
-  <p>Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
-     <a href="//github.com/arafatamim/ewubd-ical-generator">Source code on GitHub</a> •
-     <a href="//github.com/arafatamim/ewubd-ical-generator/issues">Report an issue</a>
-  </p>
-  <p>Disclaimer: This is a hobby project and not affiliated with <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
-  Use at your own risk.</p>
+    <script type="importmap">
+      {
+        "imports": {
+          "@fullcalendar/core": "https://cdn.skypack.dev/@fullcalendar/core@6",
+          "@fullcalendar/daygrid": "https://cdn.skypack.dev/@fullcalendar/daygrid@6",
+          "@fullcalendar/list": "https://cdn.skypack.dev/@fullcalendar/list@6",
+          "tippy.js": "https://cdn.skypack.dev/tippy.js@6"
+        }
+      }
+    </script>
+    <script type="module">
+      import { Calendar as FullCalendar } from "@fullcalendar/core";
+      import dayGridPlugin from "@fullcalendar/daygrid";
+      import listPlugin from "@fullcalendar/list";
+      import tippy from "tippy.js";
 
-  <script type="module">
-    const root = document.getElementById("root");
+      const root = document.getElementById("root");
 
-    const calendarRemotePath = new URL(document.location).searchParams.get(
-      "calendar_path",
-    );
+      const calendarRemotePath = new URL(document.location).searchParams.get(
+        "calendar_path",
+      );
 
-    const fetchCalendar = () =>
-      fetch("/api/entries?calendar_path=" + calendarRemotePath);
+      const fetchCalendar = () =>
+        fetch("/api/entries?calendar_path=" + calendarRemotePath);
 
-    const calendar = await fetchCalendar()
-      .then((res) => {
-        if (!res.ok) {
-          root.innerHTML = `<p>Couldn't generate calendar :-( <br />Check if <a href="//ewubd.edu">ewubd.edu</a> loads correctly</p>`;
-        } else return res.json();
-      })
-      .catch((e) => {
-        root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
-      });
+      const calendar = await fetchCalendar()
+        .then((res) => {
+          if (!res.ok) {
+            root.innerHTML = `<p>Couldn't generate calendar :-( <br />Check if <a href="//ewubd.edu">ewubd.edu</a> loads correctly</p>`;
+          } else return res.json();
+        })
+        .catch((e) => {
+          root.innerHTML = `<p>Couldn't generate calendar :-( <br />(${e.message})</p>`;
+        });
 
-    if (calendar != null) {
-      const calendarName = calendar["calendar_name"];
-      const revisedDate = new Date(calendar["revised_date"]);
-      const semester = calendar["semester"];
-      const year = calendar["year"];
-      const fileUri = (protocol) => protocol + window.location.host + "/api/generate?calendar_path=" + calendarRemotePath;
+      if (calendar != null) {
+        const calendarName = calendar["calendar_name"];
+        const revisedDate = new Date(calendar["revised_date"]);
+        const semester = calendar["semester"];
+        const year = calendar["year"];
+        const fileUri = (protocol) =>
+          protocol +
+          window.location.host +
+          "/api/generate?calendar_path=" +
+          calendarRemotePath;
 
-      document.title = `${semester} ${year} calendar - EWU Calendar Importer`;
-      const doc = `<h2>${semester} ${year}</h2>
+        document.title = `${semester} ${year} calendar - EWU Calendar`;
+        const doc = `<h2>${semester} ${year}</h2>
         <h3>${calendarName}</h3>
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
           <ul>
-            <li><a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("https://")}">Add to Google Calendar</a></li>
+            <li><a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("webcal://")}">Add to Google Calendar</a></li>
             <li><a class="button" target="_blank" href="${fileUri("webcal://")}">Add to Apple Calendar</a></li>
             <li><a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri("https://")}">Add to Outlook.com</a></li>
             <li>or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a></li>
           </ul>
-        </p>
-        <table>
-          <tr>
-            <th>Date</th>
-            <th>Event</th>
-          </tr>
-          ${calendar.entries
-          .map((entry) => {
-            const fromDate = new Date(entry.date[0]);
-            const toDate =
-              entry.date[1] != null ? new Date(entry.date[1]) : null;
+        </p>`;
 
-            const dateStr =
-              toDate == null
-                ? fromDate.toDateString()
-                : fromDate.toDateString() == toDate.toDateString()
-                  ? fromDate.toDateString()
-                  : `${fromDate.toDateString()} - ${toDate.toDateString()}`;
+        root.innerHTML = doc;
 
-            return `
-              <tr>
-                <td>${dateStr}</td>
-                <td>${entry.event}</td>
-              </tr>
-            `;
-          })
-          .join("")}
-        </table>`;
+        const calendarEl = document.getElementById("calendar");
 
-      root.innerHTML = doc;
-    }
-  </script>
-</body>
+        const lastEvent = calendar.entries[calendar.entries.length - 1];
+        const lastEventDate = new Date(lastEvent.date[1] ?? lastEvent.date[0]);
+
+        const fullCalendar = new FullCalendar(calendarEl, {
+          initialView: "dayGridMonth",
+          timeZone: "+6",
+          plugins: [dayGridPlugin, listPlugin],
+          validRange: {
+            start: calendar.entries[0].date[0],
+            end: lastEventDate,
+          },
+          headerToolbar: {
+            start: "title",
+            end: "dayGridMonth,listYear",
+          },
+          footerToolbar: {
+            right: "prev,next",
+          },
+          displayEventTime: false,
+          eventDidMount: (info) => {
+            tippy(info.el, {
+              trigger: info.view.type !== "listYear" ? "mouseenter" : "manual",
+              content: info.event.title,
+              placement: "top",
+              arrow: false,
+              theme: "myTheme",
+              delay: [0, 0],
+              duration: 0,
+            });
+            // display event dot only if title contains exam or last day
+            if (info.view.type === "listYear") {
+              const eventDot =
+                info.el.getElementsByClassName("fc-list-event-dot")[0];
+              if (info.event.title.match(/exam|last day/i)) {
+                eventDot.style.display = "inline-block";
+              } else {
+                eventDot.style.display = "none";
+              }
+            }
+          },
+          events: calendar.entries.map((entry) => {
+            let endDate = new Date(entry.date[1]);
+            endDate.setDate(endDate.getDate() + 1); // to make the end date inclusive
+            return {
+              title: entry.event,
+              start: entry.date[0],
+              end: endDate,
+              allDay: true,
+            };
+          }),
+          eventColor: "#01ff70",
+          eventTextColor: "#000",
+        });
+
+        fullCalendar.gotoDate(calendar.entries[0].date[0]); // navigate to the first event
+        fullCalendar.render();
+      }
+    </script>
+  </body>
 </html>

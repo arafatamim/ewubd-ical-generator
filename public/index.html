@@ -1,23 +1,33 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>EWU Calendar Importer</title>
+    <title>EWU Calendar</title>
     <link rel="stylesheet" type="text/css" href="stylesheet.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
 
   <body>
-    <h1>EWU Calendar Importer</h1>
+    <h1>EWU Calendar</h1>
 
     <div id="root">Loading...</div>
 
-    <br /><hr />
-    <p>Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
-       <a href="//github.com/arafatamim/ewubd-ical-generator">Source code on GitHub</a> •
-       <a href="//github.com/arafatamim/ewubd-ical-generator/issues">Report an issue</a>
+    <br />
+    <hr />
+    <p>
+      Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
+      <a href="//github.com/arafatamim/ewubd-ical-generator"
+        >Source code on GitHub</a
+      >
+      •
+      <a href="//github.com/arafatamim/ewubd-ical-generator/issues"
+        >Report an issue</a
+      >
     </p>
-    <p>Disclaimer: This is a hobby project and not affiliated with <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
-    Use at your own risk.</p>
+    <p>
+      Disclaimer: This is a hobby project and not affiliated with
+      <a href="//ewubd.edu">East West University, Bangladesh</a> in any way. Use
+      at your own risk.
+    </p>
 
     <script type="module">
       const root = document.getElementById("root");
@@ -41,14 +51,16 @@
                     `<details>
                     <summary>${program.program_type}</summary>
                     <ul>
-                      ${program.calendars.map(
-                        (calendar) =>
-                          `<li>
+                      ${program.calendars
+                        .map(
+                          (calendar) =>
+                            `<li>
                             <a href="/info.html?calendar_path=${calendar.url}">
                               ${calendar.name}
                             </a>
                           </li>`,
-                      ).join("")}
+                        )
+                        .join("")}
                     </ul>
                   </details>`,
                 )
