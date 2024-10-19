@@ -1,4 +1,4 @@
-use ewu_ics_cal::utils::cache;
+use ewu_ics_cal::utils::cache_headers;
 use scraper::Html;
 use serde_json::to_string;
 use vercel_runtime::{http::bad_request, run, Body, Error, Request, Response, StatusCode};
@@ -27,7 +27,7 @@ pub async fn calendars(_req: Request) -> Result<Response<Body>, Error> {
                 .header("Content-Type", "application/json")
                 .body(to_string(&cals)?.into())?;
 
-            cache(&mut response);
+            cache_headers(&mut response);
             Ok(response)
         }
         Err(error) => bad_request(error.to_string()),

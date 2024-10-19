@@ -1,4 +1,4 @@
-use ewu_ics_cal::{parser, utils::{self, cache}};
+use ewu_ics_cal::{parser, utils::{self, cache_headers}};
 use vercel_runtime::{run, Body, Error as VercelError, Request, Response, StatusCode};
 
 #[tokio::main]
@@ -26,7 +26,7 @@ pub async fn generate(req: Request) -> Result<Response<Body>, VercelError> {
         )
         .body(ics.into())?;
 
-    cache(&mut resp);
+    cache_headers(&mut resp);
 
     Ok(resp)
 }
