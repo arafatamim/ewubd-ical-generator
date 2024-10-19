@@ -1,8 +1,10 @@
 use super::parser;
+use chrono::NaiveDate;
+use reqwest::header::{CACHE_CONTROL, LAST_MODIFIED};
 use scraper::Html;
 use std::error::Error;
-use vercel_runtime::{Body, Error as VercelError, Request, Response};
 use urlencoding::decode;
+use vercel_runtime::{Body, Error as VercelError, Request, Response};
 
 pub async fn fetch_calendar_page() -> Result<Html, Box<dyn Error>> {
     let resp = reqwest::get("https://www.ewubd.edu/academic-calendar")
@@ -41,7 +43,18 @@ pub fn get_calendar_path(req: &Request) -> Result<String, Box<dyn Error + Send +
     Ok(calendar_path)
 }
 
-pub fn cache(res: &mut Response<Body>) {
-    res.headers_mut()
-        .insert("Cache-Control", "max-age=259200, public".parse().unwrap());
+pub fn cache_headers(res: &mut Response<Body>) -> &mut Response<Body> {
+    let headers = res.headers_mut();
+    headers.insert(CACHE_CONTROL, "max-age=259200, public".parse().unwrap());
+    headers.insert("CDN-Cache-Control", "max-age=86400".parse().unwrap());
+    res
+}
+
+pub fn last_modified_header(res: &mut Response<Body>, last_modified: NaiveDate) -> &mut Response<Body> {
+    let headers = res.headers_mut();
+    headers.insert(
+        LAST_MODIFIED,
+        last_modified.format("%a, %d %b %Y 00:00:00 GMT").to_string().parse().unwrap(),
+    );
+    res
 }

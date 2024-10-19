@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>EWU Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+  </head>
+
+  <body>
+    <h1><a href="/">EWU Calendar</a></h1>
+    <div id="root">Loading...</div>
+    <div id="calendar"></div>
+
+    <br />
+    <hr />
+    <p>
+      Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
+      <a href="//github.com/arafatamim/ewubd-ical-generator"
+        >Source code on GitHub</a
+      >
+      •
+      <a href="//github.com/arafatamim/ewubd-ical-generator/issues"
+        >Report an issue</a
+      >
+    </p>
+    <p>
+      Disclaimer: This is a hobby project and not affiliated with
+      <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
+    </p>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@fullcalendar/core": "https://cdn.skypack.dev/@fullcalendar/core@6",
+          "@fullcalendar/daygrid": "https://cdn.skypack.dev/@fullcalendar/daygrid@6",
+          "@fullcalendar/list": "https://cdn.skypack.dev/@fullcalendar/list@6",
+          "tippy.js": "https://cdn.skypack.dev/tippy.js@6"
+        }
+      }
+    </script>
+    <script type="module" src="calendar.js"></script>
+  </body>
+</html>

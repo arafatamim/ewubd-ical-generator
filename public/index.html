@@ -1,75 +1,91 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>EWU Calendar</title>
-    <link rel="stylesheet" type="text/css" href="stylesheet.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
 
-  <body>
-    <h1>EWU Calendar</h1>
+<head>
+  <title>EWU Calendar</title>
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
 
-    <div id="root">Loading...</div>
+<body>
+  <h1>EWU Calendar</h1>
 
-    <br />
-    <hr />
-    <p>
-      Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
-      <a href="//github.com/arafatamim/ewubd-ical-generator"
-        >Source code on GitHub</a
-      >
-      •
-      <a href="//github.com/arafatamim/ewubd-ical-generator/issues"
-        >Report an issue</a
-      >
-    </p>
-    <p>
-      Disclaimer: This is a hobby project and not affiliated with
-      <a href="//ewubd.edu">East West University, Bangladesh</a> in any way. Use
-      at your own risk.
-    </p>
+  <div id="root">Loading...</div>
 
-    <script type="module">
-      const root = document.getElementById("root");
+  <br />
+  <hr />
+  <p>
+    Created by <a href="//github.com/arafatamim">Tamim Arafat</a> •
+    <a href="//github.com/arafatamim/ewubd-ical-generator">Source code on GitHub</a>
+    •
+    <a href="//github.com/arafatamim/ewubd-ical-generator/issues">Report an issue</a>
+  </p>
+  <p>
+    Disclaimer: This is a hobby project and not affiliated with
+    <a href="//ewubd.edu">East West University, Bangladesh</a> in any way.
+  </p>
 
-      const fetchCalendars = async () => {
-        return fetch("/api/calendars").then((res) => res.json());
-      };
+  <script type="module">
+    const root = document.getElementById("root");
 
-      const calendars = await fetchCalendars().catch((e) => {
-        root.innerHTML = `<p>Couldn't get calendars :-( <br />(${e.message})</p>`;
-      });
+    const fetchCalendars = async () => {
+      return fetch("/api/calendars").then((res) => res.json());
+    };
 
-      const doc = `<div>
-        ${calendars
-          .map(
-            (cal) =>
-              `<h2>${cal.year}</h2>
+    const calendars = await fetchCalendars().catch((e) => {
+      root.innerHTML = `<p>Couldn't get calendars :-( <br />(${e.message})</p>`;
+    });
+
+    const doc = `${calendars
+      .map(
+        (cal) =>
+          `<section>
+            <h2>${cal.year}</h2>
               ${cal.programs
-                .map(
-                  (program) =>
-                    `<details>
+            .map(
+              (program) =>
+                `<details ${new Date().getFullYear() == cal.year ? "open" : "" /* auto expand latest year */}>
                     <summary>${program.program_type}</summary>
                     <ul>
                       ${program.calendars
-                        .map(
-                          (calendar) =>
-                            `<li>
-                            <a href="/info.html?calendar_path=${calendar.url}">
+                  .reverse()
+                  .map(
+                    (calendar) =>
+                      `<li>
+                            <a href="/calendar.html?calendar_path=${calendar.url}">
                               ${calendar.name}
                             </a>
                           </li>`,
-                        )
-                        .join("")}
+                  )
+                  .join("")}
                     </ul>
                   </details>`,
-                )
-                .join("")}`, // join to prevent stray commas in output
-          )
-          .join("")}
-      </div>`;
+            )
+            .join("")}
+              </section>`, // join to prevent stray commas in output
+      )
+      .join("")}`;
 
-      root.innerHTML = doc;
-    </script>
-  </body>
+    root.innerHTML = doc;
+
+    // inject link prefetch to first calendar page
+    const calPageUrl = document.querySelector("section li a").getAttribute("href");
+    injectLinkTag(calPageUrl, "prefetch", "document");
+
+    // inject link prefetch to API endpoint for first calendar entries
+    const fullUrl = new URL(calPageUrl, window.location)
+    const calendarPath = fullUrl.searchParams.get("calendar_path");
+    const requestUrl = `/api/entries?calendar_path=${calendarPath}`;
+    injectLinkTag(requestUrl, "prefetch", "fetch");
+
+    function injectLinkTag(url, rel, as) {
+      const linkTag = document.createElement('link');
+      linkTag.rel = 'prefetch';
+      linkTag.href = url;
+      linkTag.as = as;
+      document.head.appendChild(linkTag);
+    }
+  </script>
+</body>
+
 </html>
