@@ -116,7 +116,7 @@ pub fn get_programs(doc: &Html, year: &str) -> Vec<Program> {
         .map(|(program, calendars)| Program {
             program_type: program,
             calendars: calendars
-                .filter(|cal| !cal.name.to_lowercase().contains("exam"))
+                .filter(|cal| !cal.name.to_lowercase().contains("exam")) // filter out exam calendars
                 .collect::<Vec<Calendar>>(),
         })
         .collect::<Vec<Program>>();

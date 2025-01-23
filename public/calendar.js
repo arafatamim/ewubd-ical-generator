@@ -1,7 +1,7 @@
 const root = document.getElementById("root");
 
 const calendarRemotePath = new URL(document.location).searchParams.get(
-  "calendar_path",
+  "calendar_path"
 );
 
 const fetchCalendar = () =>
@@ -37,10 +37,18 @@ if (calendar != null) {
         <p>Last updated: ${revisedDate.toDateString()}</p>
         <p>
           <ul>
-            <li><a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri("webcal://")}">Add to Google Calendar</a></li>
-            <li><a class="button" target="_blank" href="${fileUri("webcal://")}">Add to Apple Calendar</a></li>
-            <li><a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri("https://")}">Add to Outlook.com</a></li>
-            <li>or <a href="/api/generate?calendar_path=${encodeURIComponent(calendarRemotePath)}">download .ics file</a></li>
+            <li><a class="button" target="_blank" href="https://calendar.google.com/calendar/u/0/r?cid=${fileUri(
+              "webcal://"
+            )}">Add to Google Calendar</a></li>
+            <li><a class="button" target="_blank" href="${fileUri(
+              "webcal://"
+            )}">Add to Apple Calendar</a></li>
+            <li><a class="button" target="_blank" href="https://outlook.live.com/calendar/0/addfromweb/?url=${fileUri(
+              "https://"
+            )}">Add to Outlook.com</a></li>
+            <li>or <a href="/api/generate?calendar_path=${encodeURIComponent(
+              calendarRemotePath
+            )}">download .ics file</a></li>
           </ul>
         </p>`;
 
@@ -113,7 +121,7 @@ if (calendar != null) {
         allDay: true,
       };
     }),
-    eventColor: "#01ff70",
+    eventColor: "var(--pico-primary)",
     eventTextColor: "#000",
   });
 

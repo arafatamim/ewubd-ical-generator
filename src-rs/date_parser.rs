@@ -1,7 +1,9 @@
 use std::error::Error;
 
 use chumsky::{
-    error::Simple, primitive::{choice, just, take_until}, text, Parser
+    error::Simple,
+    primitive::{choice, just, take_until},
+    text, Parser,
 };
 
 // use nom::{
@@ -43,6 +45,7 @@ pub fn parse_month() -> impl Parser<char, u8, Error = Simple<char>> {
     ))
 }
 
+/// eg: January 27, Feb 16
 pub fn parse_date_part() -> impl Parser<char, DatePart, Error = Simple<char>> {
     parse_month()
         .or_not()
@@ -53,6 +56,7 @@ pub fn parse_date_part() -> impl Parser<char, DatePart, Error = Simple<char>> {
         .map(|(month, day)| DatePart { month, day })
 }
 
+/// parses multiple date parts between a separator
 pub fn parse_date_parts() -> impl Parser<char, Vec<DatePart>, Error = Simple<char>> {
     parse_date_part().separated_by(choice((just(" - "), just("-"), just(" "))))
 }
@@ -95,6 +99,7 @@ pub fn parse_date_parts<'a>(i: &'a str) -> IResult<&'a str, Vec<DatePart>> {
 }
 */
 
+/// converts date parts into a readable struct
 pub fn parse_date_range(i: &str) -> Result<DateRange, Box<dyn Error>> {
     let date_parts = parse_date_parts().parse(i).expect("Couldn't parse date");
 
