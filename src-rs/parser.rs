@@ -23,7 +23,6 @@ pub struct CalendarDetails {
 #[derive(Serialize, Debug)]
 pub struct Entry {
     pub date: (NaiveDate, Option<NaiveDate>),
-    pub revised_date: NaiveDate,
     pub event: String,
 }
 
@@ -243,11 +242,7 @@ pub fn generate_calendar<'a>(doc: &'a Html) -> Result<CalendarDetails, Box<dyn E
             })
             .collect::<String>();
 
-        entries.push(Entry {
-            date,
-            event,
-            revised_date,
-        });
+        entries.push(Entry { date, event });
     }
 
     let calendar_name = doc
@@ -305,7 +300,10 @@ pub fn generate_ics(calendar_details: CalendarDetails) -> String {
         event.push(dtend);
 
         event.push(LastModified::new(
-            entry.revised_date.format("%Y%m%dT000000").to_string(),
+            calendar_details
+                .revised_date
+                .format("%Y%m%dT000000")
+                .to_string(),
         ));
         event.push(Summary::new(entry.event));
         event.push(Location::new("East West University, Dhaka"));
