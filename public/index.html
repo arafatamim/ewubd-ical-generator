@@ -36,7 +36,13 @@
       const root = document.getElementById("root");
 
       const fetchCalendars = async () => {
-        return fetch("/api/calendars").then((res) => res.json());
+        const res = await fetch("/api/calendars");
+
+        if (!res.ok) {
+          throw new Error(`HTTP status code ${res.status}`);
+        }
+
+        return res.json();
       };
 
       const calendars = await fetchCalendars().catch((e) => {
